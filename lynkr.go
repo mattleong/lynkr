@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	api.LynkrServerStart()
+	api.ServerStart()
 }
