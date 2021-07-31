@@ -9,6 +9,6 @@ func ServerStart() {
 	logger.Log("Lynkr server started...")
 
 	http.HandleFunc("/", RootRoute)
-	http.HandleFunc("/create", RootRoute)
+	http.HandleFunc("/create", CreateRoute)
 	http.ListenAndServe(":3000", nil)
 }
