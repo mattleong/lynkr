@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"github.com/mattleong/lynkr/api/routes"
+	"github.com/mattleong/lynkr/api"
 )
 
 func main() {
 	fmt.Println("init lynker")
 
-	http.HandleFunc("/", RootRoute)
-	http.HandleFunc("/create", RootRoute)
+	http.HandleFunc("/", api.RootRoute)
+	http.HandleFunc("/create", api.RootRoute)
 	http.ListenAndServe(":3000", nil)
 }
