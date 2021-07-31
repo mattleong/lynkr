@@ -7,20 +7,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func RootRoute(w http.ResponseWriter, req *http.Request) {
+func RootRoute(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
 	logger.Log("hit: /")
 	fmt.Fprintf(w, "hello\n")
 }
 
-func CreateRoute(w http.ResponseWriter, req *http.Request) {
+func CreateRoute(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
 	logger.Log("hit: /create")
 	fmt.Fprintf(w, "create\n")
 }
 
-func LynkrRoute(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "link id: %v\n", vars["id"])
+func LynkrRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	fmt.Printf("hit: /z/%v\n", id)
+	http.Redirect(w, r, "https://google.com", http.StatusSeeOther)
 }
