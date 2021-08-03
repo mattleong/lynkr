@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -24,5 +24,8 @@ func ServerStart() {
 	r.Use(loggingMiddleware)
 
 	http.Handle("/", r)
-	http.ListenAndServe(":3000", nil)
+	err := http.ListenAndServe(":3000", nil)
+	if err != nil {
+		return
+	}
 }

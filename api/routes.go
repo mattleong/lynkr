@@ -1,11 +1,11 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/mattleong/lynkr/lynkr"
-	"encoding/json"
+	"net/http"
 )
 
 func RootRoute(w http.ResponseWriter, r *http.Request) {
