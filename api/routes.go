@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
+	"github.com/mattleong/lynkr/lynkr"
+	"encoding/json"
 )
 
 func RootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "hello\n")
 }
 
 func CreateRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "create\n")
+	w.Header().Set("Content-Type", "application/json")
+
+	lynk := lynkr.NewLynkFromRequest(w, r)
+	res, _ := json.Marshal(lynk)
+	w.Write(res)
 }
 
 func LynkrRoute(w http.ResponseWriter, r *http.Request) {
