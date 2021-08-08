@@ -18,7 +18,7 @@ func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
-		l := lynkr.NewLynkFromRequest(w, r)
+		l := lynkr.NewRequestLynk(w, r)
 		lynk, lynkErr := s.Save(l)
 		if lynkErr != nil {
 			return

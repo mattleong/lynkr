@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"github.com/mattleong/lynkr/lynkr"
@@ -26,7 +26,7 @@ func (s *SynkrClient) Ping() {
 	fmt.Println("Database is alive!")
 }
 
-func (s *SynkrClient) CreateContext() (context.Context, context.CancelFunc) {
+func CreateContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	return ctx, cancel
 }
@@ -34,7 +34,7 @@ func (s *SynkrClient) CreateContext() (context.Context, context.CancelFunc) {
 func (s *SynkrClient) FindOne(id string) *lynkr.Lynk {
 	collection := s.db.Database("testing").Collection("lynks")
 	filter := bson.D{{"id", id}}
-	ctx, cancel := s.CreateContext()
+	ctx, cancel := CreateContext()
 	defer cancel()
 	result := lynkr.Lynk{}
 	err := collection.FindOne(ctx, filter).Decode(&result)
@@ -49,20 +49,18 @@ func (s *SynkrClient) FindOne(id string) *lynkr.Lynk {
 }
 
 func (s *SynkrClient) Save(requestLynk *lynkr.RequestLynk) (*lynkr.Lynk, error) {
+	fmt.Printf("Saving new lynk: %s\n", requestLynk)
 	collection := s.db.Database("testing").Collection("lynks")
 
-	s.Ping()
 	url := "/z/" + requestLynk.Id
-	lynk := lynkr.Lynk{ Url: url }
+	lynk := lynkr.Lynk{ Url: url, Id: requestLynk.Id }
 
-	ctx, cancel := s.CreateContext()
+	ctx, cancel := CreateContext()
 	defer cancel()
-	_, err := collection.InsertOne(ctx, bson.D{{"id", requestLynk.Id}, {"url", url}})
-
-	fmt.Printf("Saving new lynk: %s\n", requestLynk)
-
-	dbLynk := s.FindOne(requestLynk.Id)
-	fmt.Printf("db result lynk: %s\n", dbLynk)
+	_, err := collection.InsertOne(ctx, bson.D{
+		{ "id", requestLynk.Id },
+		{"url", url},
+	})
 
 	return &lynk, err
 }
@@ -75,7 +73,7 @@ func NewSynkrClient() *SynkrClient {
 func GetClient() *mongo.Client {
 	// @TODO Replace the uri string with your MongoDB deployment's connection string.
 	uri := "mongodb://localhost:27017"
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := CreateContext()
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
