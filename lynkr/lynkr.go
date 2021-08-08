@@ -6,11 +6,11 @@ type RequestLynk struct {
 }
 
 type Lynk struct {
-	Url string
+	Url string `json:"url"`
 }
 
 func CreateRequestLynk(url string) (*RequestLynk, error) {
-	id := RandomString(10)
+	id := GenerateId(10)
 	lynk := RequestLynk{ Id: id, Url: url }
 	return &lynk, nil
 }

@@ -4,7 +4,7 @@ import (
 	"math/rand"
 )
 
-func RandomString(n int) string {
+func GenerateId(n int) string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 	s := make([]rune, n)
