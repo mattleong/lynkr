@@ -1,11 +1,8 @@
-package api
+package synkr
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/mattleong/lynkr/synkr"
 )
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -19,18 +16,13 @@ func ServerStart() {
 	fmt.Println("Lynkr server started...")
 
 	// set up synkr client
-	s := synkr.NewSynkrClient()
-	s.Ping()
+	s := NewSynkrClient()
+	s.SetRoutes()
+	defer s.Disconnect()
 
-	r := mux.NewRouter()
+	s.router.Use(loggingMiddleware)
 
-	r.HandleFunc("/", s.RootRoute)
-	// pass db to as route dep
-	r.HandleFunc("/create", s.CreateRoute())
-	r.HandleFunc("/z/{id}", s.LynkrRoute())
-	r.Use(loggingMiddleware)
-
-	http.Handle("/", r)
+	http.Handle("/", s.router)
 	httpErr := http.ListenAndServe(":3000", nil)
 	if httpErr != nil {
 		return

@@ -6,30 +6,45 @@ import (
 	"log"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/mattleong/lynkr/lynkr"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-
 type SynkrClient struct {
 	db *mongo.Client
+	router *mux.Router
+}
+
+func CreateContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	return ctx, cancel
+}
+
+func NewSynkrClient() *SynkrClient {
+	db := NewDBClient()
+	r := NewRouter()
+	return &SynkrClient{ db: db, router: r }
+}
+
+func (s *SynkrClient) Disconnect() {
+	ctx, cancel := CreateContext()
+	defer cancel()
+	err := s.db.Disconnect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (s *SynkrClient) Ping() {
 	ctx, cancel := CreateContext()
 	defer cancel()
 	if err := s.db.Ping(ctx, readpref.Primary()); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Database is alive!")
-}
-
-func CreateContext() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	return ctx, cancel
 }
 
 func (s *SynkrClient) FindOne(id string) *lynkr.Lynk {
@@ -64,27 +79,5 @@ func (s *SynkrClient) Save(requestLynk *RequestLynk) (*lynkr.Lynk, error) {
 	})
 
 	return lynk, err
-}
-
-func NewSynkrClient() *SynkrClient {
-	db := GetClient()
-	return &SynkrClient{ db: db }
-}
-
-func GetClient() *mongo.Client {
-	// @TODO Replace the uri string with your MongoDB deployment's connection string.
-	uri := "mongodb://localhost:27017"
-	ctx, cancel := CreateContext()
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-//	defer func() {
-//		if err = client.Disconnect(ctx); err != nil {
-//			panic(err)
-//		}
-//	}()
-	return client
 }
 
