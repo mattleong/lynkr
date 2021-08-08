@@ -6,6 +6,7 @@ type RequestLynk struct {
 }
 
 type Lynk struct {
+	Id string `json:"id"`
 	Url string `json:"url"`
 }
 

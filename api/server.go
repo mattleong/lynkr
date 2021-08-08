@@ -9,7 +9,7 @@ import (
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("hit: %s\n", r.RequestURI)
+		fmt.Printf("Hit: %s\n", r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -17,12 +17,14 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func ServerStart() {
 	fmt.Println("Lynkr server started...")
 
-	db := synkr.GetClient()
-	s := synkr.NewSynkrClient(db)
+	// set up db
+	s := synkr.NewSynkrClient()
+	s.Ping()
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", RootRoute)
+	// pass db to as route dep
 	r.HandleFunc("/create", CreateRoute(s))
 	r.HandleFunc("/z/{id}", LynkrRoute)
 	r.Use(loggingMiddleware)
