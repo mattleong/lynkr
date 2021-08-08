@@ -5,9 +5,9 @@ type Lynk struct {
 	Url string
 }
 
-func CreateLynk(url string) *Lynk {
+func CreateLynk(url string) (*Lynk, error) {
 	id := RandomString(10)
 	lynk := Lynk{ Id: id, Url: url }
-	return &lynk
+	return &lynk, nil
 }
 

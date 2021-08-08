@@ -19,13 +19,11 @@ func NewLynkFromRequest(w http.ResponseWriter, r *http.Request) *Lynk {
 		return nil
 	}
 
-	lynk := CreateLynk(body.Url)
-	lynk, lynkErr := SaveLynk(lynk)
+	lynk, lynkErr := CreateLynk(body.Url)
 	if lynkErr != nil {
 		return nil
 	}
 
-	fmt.Println("new lynk...");
 	fmt.Println("lynk: ", lynk);
 
 	return lynk

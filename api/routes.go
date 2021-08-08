@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/mattleong/lynkr/lynkr"
+	"github.com/mattleong/lynkr/synkr"
 	"net/http"
 )
 
@@ -16,7 +17,11 @@ func CreateRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 
-	lynk := lynkr.NewLynkFromRequest(w, r)
+	l := lynkr.NewLynkFromRequest(w, r)
+	lynk, lynkErr := synkr.SaveLynk(l)
+	if lynkErr != nil {
+		return
+	}
 	res, _ := json.Marshal(lynk)
 	w.Write(res)
 }
