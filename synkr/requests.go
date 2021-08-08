@@ -1,4 +1,4 @@
-package lynkr
+package synkr
 
 import (
 	"encoding/json"
@@ -8,6 +8,17 @@ import (
 
 type CreateRequestBody struct {
 	Url string
+}
+
+type RequestLynk struct {
+	Id string
+	Url string
+}
+
+func CreateRequestLynk(url string) (*RequestLynk, error) {
+	id := GenerateId(10)
+	lynk := RequestLynk{ Id: id, Url: url }
+	return &lynk, nil
 }
 
 func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {

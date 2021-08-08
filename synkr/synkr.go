@@ -1,15 +1,16 @@
 package synkr
 
 import (
-	"time"
 	"context"
 	"fmt"
 	"log"
-	"go.mongodb.org/mongo-driver/mongo"
+	"time"
+
+	"github.com/mattleong/lynkr/lynkr"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"github.com/mattleong/lynkr/lynkr"
 )
 
 
@@ -18,7 +19,7 @@ type SynkrClient struct {
 }
 
 func (s *SynkrClient) Ping() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := CreateContext()
 	defer cancel()
 	if err := s.db.Ping(ctx, readpref.Primary()); err != nil {
 		panic(err)
@@ -47,12 +48,12 @@ func (s *SynkrClient) FindOne(id string) *lynkr.Lynk {
 	return &result
 }
 
-func (s *SynkrClient) Save(requestLynk *lynkr.RequestLynk) (*lynkr.Lynk, error) {
+func (s *SynkrClient) Save(requestLynk *RequestLynk) (*lynkr.Lynk, error) {
 	fmt.Printf("Saving new lynk: %s\n", requestLynk)
 	collection := s.db.Database("testing").Collection("lynks")
 
 	url := "/z/" + requestLynk.Id
-	lynk := lynkr.Lynk{ Url: url, Id: requestLynk.Id, GoUrl: requestLynk.Url }
+	lynk := lynkr.CreateLynk(requestLynk.Id, url, requestLynk.Url)
 
 	ctx, cancel := CreateContext()
 	defer cancel()
@@ -62,7 +63,7 @@ func (s *SynkrClient) Save(requestLynk *lynkr.RequestLynk) (*lynkr.Lynk, error) 
 		{ "goUrl", lynk.GoUrl },
 	})
 
-	return &lynk, err
+	return lynk, err
 }
 
 func NewSynkrClient() *SynkrClient {

@@ -1,24 +1,23 @@
-package api
+package synkr
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/mattleong/lynkr/lynkr"
-	"github.com/mattleong/lynkr/synkr"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
-func RootRoute(w http.ResponseWriter, r *http.Request) {
+func (s *SynkrClient) RootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+func (s *SynkrClient) CreateRoute() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
-		l := lynkr.NewRequestLynk(w, r)
+		l := NewRequestLynk(w, r)
 		lynk, lynkErr := s.Save(l)
 		if lynkErr != nil {
 			return
@@ -27,12 +26,10 @@ func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
-
-	return fn
 }
 
-func LynkrRoute(s *synkr.SynkrClient) http.HandlerFunc {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+func (s *SynkrClient) LynkrRoute() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
@@ -44,6 +41,4 @@ func LynkrRoute(s *synkr.SynkrClient) http.HandlerFunc {
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
-
-	return fn
 }
