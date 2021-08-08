@@ -22,6 +22,9 @@ func CreateRoute(w http.ResponseWriter, r *http.Request) {
 	if lynkErr != nil {
 		return
 	}
+
+	fmt.Println("lynk: ", lynk.Url);
+
 	res, _ := json.Marshal(lynk)
 	w.Write(res)
 }

@@ -10,7 +10,7 @@ type CreateRequestBody struct {
 	Url string
 }
 
-func NewLynkFromRequest(w http.ResponseWriter, r *http.Request) *Lynk {
+func NewLynkFromRequest(w http.ResponseWriter, r *http.Request) *RequestLynk {
 	var body CreateRequestBody
 	err := json.NewDecoder(r.Body).Decode(&body)
 
@@ -19,12 +19,12 @@ func NewLynkFromRequest(w http.ResponseWriter, r *http.Request) *Lynk {
 		return nil
 	}
 
-	lynk, lynkErr := CreateLynk(body.Url)
+	lynk, lynkErr := CreateRequestLynk(body.Url)
 	if lynkErr != nil {
 		return nil
 	}
 
-	fmt.Println("lynk: ", lynk);
+	fmt.Println("request lynk: ", lynk);
 
 	return lynk
 }

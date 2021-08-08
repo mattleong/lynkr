@@ -1,13 +1,17 @@
 package lynkr
 
-type Lynk struct {
+type RequestLynk struct {
 	Id string
 	Url string
 }
 
-func CreateLynk(url string) (*Lynk, error) {
+type Lynk struct {
+	Url string
+}
+
+func CreateRequestLynk(url string) (*RequestLynk, error) {
 	id := RandomString(10)
-	lynk := Lynk{ Id: id, Url: url }
+	lynk := RequestLynk{ Id: id, Url: url }
 	return &lynk, nil
 }
 
