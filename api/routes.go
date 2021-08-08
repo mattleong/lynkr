@@ -13,20 +13,24 @@ func RootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func CreateRoute(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
+func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
 
-	l := lynkr.NewLynkFromRequest(w, r)
-	lynk, lynkErr := synkr.SaveLynk(l)
-	if lynkErr != nil {
-		return
+		l := lynkr.NewLynkFromRequest(w, r)
+		lynk, lynkErr := s.Save(l)
+		if lynkErr != nil {
+			return
+		}
+
+		fmt.Println("lynk: ", lynk.Url);
+
+		res, _ := json.Marshal(lynk)
+		w.Write(res)
 	}
 
-	fmt.Println("lynk: ", lynk.Url);
-
-	res, _ := json.Marshal(lynk)
-	w.Write(res)
+	return fn
 }
 
 func LynkrRoute(w http.ResponseWriter, r *http.Request) {
