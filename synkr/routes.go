@@ -8,8 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// type SynkrRouter *mux.Router
-
 type CreateRequestBody struct {
 	Url string
 }
@@ -17,6 +15,10 @@ type CreateRequestBody struct {
 type RequestLynk struct {
 	Id string
 	Url string
+}
+
+type SynkrRouter struct {
+	r *mux.Router
 }
 
 func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
@@ -33,14 +35,16 @@ func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
 	return &RequestLynk{ Id: id, Url: body.Url }
 }
 
-func NewRouter() *mux.Router {
-	return mux.NewRouter()
+func NewRouter() *SynkrRouter {
+	r := mux.NewRouter()
+	return &SynkrRouter{r:r}
 }
 
 func (s *SynkrClient) SetRoutes() {
-	s.router.HandleFunc("/", s.rootRoute)
-	s.router.HandleFunc("/create", s.createRoute())
-	s.router.HandleFunc("/z/{id}", s.lynkrRoute())
+	s.router.r.HandleFunc("/", s.rootRoute)
+	s.router.r.HandleFunc("/create", s.createRoute())
+	s.router.r.HandleFunc("/z/{id}", s.lynkrRoute())
+	s.router.r.Use(LoggingMiddleware)
 }
 
 func (s *SynkrClient) rootRoute(w http.ResponseWriter, r *http.Request) {

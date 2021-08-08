@@ -3,13 +3,11 @@ package synkr
 import (
 	"context"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type SynkrClient struct {
 	db *SynkrDB
-	router *mux.Router
+	router *SynkrRouter
 }
 
 func CreateContext() (context.Context, context.CancelFunc) {
@@ -20,7 +18,7 @@ func CreateContext() (context.Context, context.CancelFunc) {
 func NewSynkrClient() *SynkrClient {
 	db := NewDBClient()
 	r := NewRouter()
-	return &SynkrClient{ db: db, router: r }
+	client := SynkrClient{ db: db, router: r }
+	client.SetRoutes()
+	return &client
 }
-
-

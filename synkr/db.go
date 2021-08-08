@@ -64,7 +64,6 @@ func (db *SynkrDB) Save(requestLynk *RequestLynk) (*lynkr.Lynk, error) {
 	return lynk, err
 }
 
-
 func (db *SynkrDB) FindOne(id string) *lynkr.Lynk {
 	collection := db.client.Database("testing").Collection("lynks")
 	filter := bson.D{{"id", id}}
