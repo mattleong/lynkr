@@ -53,7 +53,7 @@ func (s *SynkrClient) createRoute() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		l := NewRequestLynk(w, r)
-		lynk, lynkErr := s.Save(l)
+		lynk, lynkErr := s.db.Save(l)
 		if lynkErr != nil {
 			return
 		}
@@ -67,7 +67,7 @@ func (s *SynkrClient) lynkrRoute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		lynk := s.FindOne(id)
+		lynk := s.db.FindOne(id)
 		fmt.Println("found -> ", lynk.Id);
 		fmt.Println("redirecting -> ", lynk.GoUrl);
 		http.Redirect(w, r, lynk.GoUrl, http.StatusSeeOther)

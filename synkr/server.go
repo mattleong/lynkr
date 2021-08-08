@@ -18,7 +18,7 @@ func ServerStart() {
 	// set up synkr client
 	s := NewSynkrClient()
 	s.SetRoutes()
-	defer s.Disconnect()
+	defer s.db.disconnect()
 
 	s.router.Use(loggingMiddleware)
 
