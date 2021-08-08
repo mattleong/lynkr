@@ -39,7 +39,6 @@ func (s *SynkrClient) FindOne(id string) *lynkr.Lynk {
 	result := lynkr.Lynk{}
 	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
-		// Do something when no record was found
 		fmt.Println("record does not exist")
 	} else if err != nil {
 		log.Fatal(err)
@@ -53,13 +52,14 @@ func (s *SynkrClient) Save(requestLynk *lynkr.RequestLynk) (*lynkr.Lynk, error) 
 	collection := s.db.Database("testing").Collection("lynks")
 
 	url := "/z/" + requestLynk.Id
-	lynk := lynkr.Lynk{ Url: url, Id: requestLynk.Id }
+	lynk := lynkr.Lynk{ Url: url, Id: requestLynk.Id, GoUrl: requestLynk.Url }
 
 	ctx, cancel := CreateContext()
 	defer cancel()
 	_, err := collection.InsertOne(ctx, bson.D{
-		{ "id", requestLynk.Id },
-		{"url", url},
+		{ "id", lynk.Id },
+		{ "url", lynk.Url },
+		{ "goUrl", lynk.GoUrl },
 	})
 
 	return &lynk, err

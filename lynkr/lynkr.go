@@ -8,6 +8,7 @@ type RequestLynk struct {
 type Lynk struct {
 	Id string `json:"id"`
 	Url string `json:"url"`
+	GoUrl string `json:"goUrl"`
 }
 
 func CreateRequestLynk(url string) (*RequestLynk, error) {

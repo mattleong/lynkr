@@ -26,7 +26,7 @@ func ServerStart() {
 	r.HandleFunc("/", RootRoute)
 	// pass db to as route dep
 	r.HandleFunc("/create", CreateRoute(s))
-	r.HandleFunc("/z/{id}", LynkrRoute)
+	r.HandleFunc("/z/{id}", LynkrRoute(s))
 	r.Use(loggingMiddleware)
 
 	http.Handle("/", r)

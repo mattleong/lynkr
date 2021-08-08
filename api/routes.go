@@ -24,8 +24,6 @@ func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
 			return
 		}
 
-		fmt.Println("lynk: ", lynk.Url);
-
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
@@ -33,9 +31,19 @@ func CreateRoute(s *synkr.SynkrClient) http.HandlerFunc {
 	return fn
 }
 
-func LynkrRoute(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	fmt.Fprintf(w, "hit: /z/%s\n", id)
-	//	http.Redirect(w, r, "https://google.com", http.StatusSeeOther)
+func LynkrRoute(s *synkr.SynkrClient) http.HandlerFunc {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+
+		vars := mux.Vars(r)
+		id := vars["id"]
+		lynk := s.FindOne(id)
+		fmt.Println("return lynk!!: ", lynk.Url);
+		//	http.Redirect(w, r, "https://google.com", http.StatusSeeOther)
+		res, _ := json.Marshal(lynk)
+		w.Write(res)
+	}
+
+	return fn
 }
