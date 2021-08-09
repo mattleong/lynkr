@@ -3,13 +3,14 @@ package synkr
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-type CreateRequestBody struct {
-	Url string
+type SynkrRouter struct {
+	r *mux.Router
 }
 
 type RequestLynk struct {
@@ -17,12 +18,12 @@ type RequestLynk struct {
 	Url string
 }
 
-type SynkrRouter struct {
-	r *mux.Router
+type createRequestBody struct {
+	Url string
 }
 
-func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
-	var body CreateRequestBody
+func newRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
+	var body createRequestBody
 	err := json.NewDecoder(r.Body).Decode(&body)
 
 	if err != nil {
@@ -35,16 +36,16 @@ func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
 	return &RequestLynk{ Id: id, Url: body.Url }
 }
 
-func NewRouter() *SynkrRouter {
+func newRouter() *SynkrRouter {
 	r := mux.NewRouter()
 	return &SynkrRouter{r:r}
 }
 
-func (s *SynkrClient) SetRoutes() {
+func (s *SynkrClient) setRoutes() {
 	s.router.r.HandleFunc("/", s.rootRoute)
 	s.router.r.HandleFunc("/create", s.createRoute())
 	s.router.r.HandleFunc("/z/{id}", s.lynkrRoute())
-	s.router.r.Use(LoggingMiddleware)
+	s.router.r.Use(loggingMiddleware)
 }
 
 func (s *SynkrClient) rootRoute(w http.ResponseWriter, r *http.Request) {
@@ -56,9 +57,11 @@ func (s *SynkrClient) createRoute() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
-		l := NewRequestLynk(w, r)
-		lynk, lynkErr := s.db.Save(l)
+		ctx := r.Context()
+		l := newRequestLynk(w, r)
+		lynk, lynkErr := s.db.SaveLynk(ctx, l)
 		if lynkErr != nil {
+			log.Fatal(lynkErr)
 			return
 		}
 
@@ -71,9 +74,14 @@ func (s *SynkrClient) lynkrRoute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		lynk := s.db.FindOne(id)
-		fmt.Println("found -> ", lynk.Id);
-		fmt.Println("redirecting -> ", lynk.GoUrl);
+		ctx := r.Context()
+		lynk, lynkErr := s.db.FindLynkById(ctx, id)
+		if lynkErr != nil {
+			log.Fatal(lynkErr)
+			return
+		}
+
+		fmt.Printf("found: %s redirecting -> %s\n", lynk.Id, lynk.GoUrl);
 		http.Redirect(w, r, lynk.GoUrl, http.StatusSeeOther)
 	}
 }

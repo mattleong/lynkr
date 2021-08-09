@@ -10,15 +10,15 @@ type SynkrClient struct {
 	router *SynkrRouter
 }
 
-func CreateContext() (context.Context, context.CancelFunc) {
+func createContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	return ctx, cancel
 }
 
 func NewSynkrClient() *SynkrClient {
-	db := NewDBClient()
-	r := NewRouter()
+	db := newDBClient()
+	r := newRouter()
 	client := SynkrClient{ db: db, router: r }
-	client.SetRoutes()
+	client.setRoutes()
 	return &client
 }

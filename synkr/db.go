@@ -1,26 +1,32 @@
 package synkr
 
 import (
-	"log"
+	"context"
+	"flag"
 	"fmt"
+	"log"
 
 	"github.com/mattleong/lynkr/lynkr"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type SynkrDB struct {
 	client *mongo.Client
 }
 
-func NewDBClient() *SynkrDB {
-	// @TODO Replace the uri string with your MongoDB deployment's connection string.
-	uri := "mongodb://localhost:27017"
-	ctx, cancel := CreateContext()
+func getDBURI() *string {
+	dbURI := flag.String("dbHost", "mongodb://localhost:27017", "URI to db host")
+	return dbURI
+}
+
+func newDBClient() *SynkrDB {
+	uri := getDBURI()
+	ctx, cancel := createContext()
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(*uri))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,33 +34,26 @@ func NewDBClient() *SynkrDB {
 	return &SynkrDB{client: client}
 }
 
-func (db *SynkrDB) disconnect() {
-	ctx, cancel := CreateContext()
-	defer cancel()
+func (db *SynkrDB) Disconnect(ctx context.Context) {
 	err := db.client.Disconnect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (db *SynkrDB) ping() {
-	ctx, cancel := CreateContext()
-	defer cancel()
+func (db *SynkrDB) Ping(ctx context.Context) {
 	if err := db.client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Database is alive!")
 }
 
-func (db *SynkrDB) Save(requestLynk *RequestLynk) (*lynkr.Lynk, error) {
+func (db *SynkrDB) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*lynkr.Lynk, error) {
 	fmt.Printf("Saving new lynk: %s\n", requestLynk)
 	collection := db.client.Database("testing").Collection("lynks")
-
 	url := "/z/" + requestLynk.Id
 	lynk := lynkr.CreateLynk(requestLynk.Id, url, requestLynk.Url)
 
-	ctx, cancel := CreateContext()
-	defer cancel()
 	_, err := collection.InsertOne(ctx, bson.D{
 		{ "id", lynk.Id },
 		{ "url", lynk.Url },
@@ -64,18 +63,14 @@ func (db *SynkrDB) Save(requestLynk *RequestLynk) (*lynkr.Lynk, error) {
 	return lynk, err
 }
 
-func (db *SynkrDB) FindOne(id string) *lynkr.Lynk {
+func (db *SynkrDB) FindLynkById(ctx context.Context, id string) (*lynkr.Lynk, error) {
+	var result lynkr.Lynk
 	collection := db.client.Database("testing").Collection("lynks")
 	filter := bson.D{{"id", id}}
-	ctx, cancel := CreateContext()
-	defer cancel()
-	result := lynkr.Lynk{}
 	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		fmt.Println("record does not exist")
-	} else if err != nil {
-		log.Fatal(err)
 	}
 
-	return &result
+	return &result, err
 }
