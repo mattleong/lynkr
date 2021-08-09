@@ -59,12 +59,12 @@ func (s *SynkrClient) createRoute() http.HandlerFunc {
 
 		ctx := r.Context()
 		l := newRequestLynk(w, r)
-		lynk, lynkErr := s.db.SaveLynk(ctx, l)
+		lynk, lynkErr := s.SaveLynk(ctx, l)
 		if lynkErr != nil {
 			log.Fatal(lynkErr)
-			return
 		}
 
+		fmt.Printf("created: %s -> %s\n", lynk.Id, lynk.GoUrl);
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
@@ -75,10 +75,9 @@ func (s *SynkrClient) lynkrRoute() http.HandlerFunc {
 		vars := mux.Vars(r)
 		id := vars["id"]
 		ctx := r.Context()
-		lynk, lynkErr := s.db.FindLynkById(ctx, id)
+		lynk, lynkErr := s.FindLynkById(ctx, id)
 		if lynkErr != nil {
 			log.Fatal(lynkErr)
-			return
 		}
 
 		fmt.Printf("found: %s redirecting -> %s\n", lynk.Id, lynk.GoUrl);
