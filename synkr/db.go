@@ -52,8 +52,8 @@ func (db *SynkrDB) getLynkCollection() *mongo.Collection {
 	return db.client.Database("testing").Collection("lynks")
 }
 
-func (s *SynkrClient) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*lynkr.Lynk, error) {
-	collection := s.db.getLynkCollection()
+func (db *SynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*lynkr.Lynk, error) {
+	collection := db.getLynkCollection()
 	url := "/z/" + requestLynk.Id
 	lynk := lynkr.CreateLynk(requestLynk.Id, url, requestLynk.Url)
 
@@ -66,9 +66,9 @@ func (s *SynkrClient) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*
 	return lynk, err
 }
 
-func (s *SynkrClient) FindLynkById(ctx context.Context, id string) (*lynkr.Lynk, error) {
+func (db *SynkrDB) findLynkById(ctx context.Context, id string) (*lynkr.Lynk, error) {
 	var result lynkr.Lynk
-	collection := s.db.getLynkCollection()
+	collection := db.getLynkCollection()
 	filter := bson.D{{"id", id}}
 
 	err := collection.FindOne(ctx, filter).Decode(&result)
