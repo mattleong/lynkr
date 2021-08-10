@@ -1,4 +1,4 @@
-package synkr
+package lynkr
 
 import (
 	"context"
@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mattleong/lynkr/lynkr"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type SynkrDB struct {
+type LynkrDB struct {
 	client *mongo.Client
 }
 
@@ -22,7 +21,7 @@ func getDBURI() *string {
 	return dbURI
 }
 
-func newDBClient() *SynkrDB {
+func newDBClient() *LynkrDB {
 	uri := getDBURI()
 	ctx, cancel := createContext()
 	defer cancel()
@@ -31,31 +30,31 @@ func newDBClient() *SynkrDB {
 		log.Fatal(err)
 	}
 
-	return &SynkrDB{client: client}
+	return &LynkrDB{client: client}
 }
 
-func (db *SynkrDB) Disconnect(ctx context.Context) {
+func (db *LynkrDB) Disconnect(ctx context.Context) {
 	err := db.client.Disconnect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (db *SynkrDB) Ping(ctx context.Context) {
+func (db *LynkrDB) Ping(ctx context.Context) {
 	if err := db.client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Database is alive!")
 }
 
-func (db *SynkrDB) getLynkCollection() *mongo.Collection {
+func (db *LynkrDB) getLynkCollection() *mongo.Collection {
 	return db.client.Database("testing").Collection("lynks")
 }
 
-func (db *SynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*lynkr.Lynk, error) {
+func (db *LynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
 	collection := db.getLynkCollection()
 	url := "/z/" + requestLynk.Id
-	lynk := lynkr.CreateLynk(requestLynk.Id, url, requestLynk.Url)
+	lynk := CreateLynk(requestLynk.Id, url, requestLynk.Url)
 
 	_, err := collection.InsertOne(ctx, bson.D{
 		{ "id", lynk.Id },
@@ -66,8 +65,8 @@ func (db *SynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*lyn
 	return lynk, err
 }
 
-func (db *SynkrDB) findLynkById(ctx context.Context, id string) (*lynkr.Lynk, error) {
-	var result lynkr.Lynk
+func (db *LynkrDB) findLynkById(ctx context.Context, id string) (*Lynk, error) {
+	var result Lynk
 	collection := db.getLynkCollection()
 	filter := bson.D{{"id", id}}
 

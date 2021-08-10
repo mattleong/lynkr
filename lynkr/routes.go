@@ -1,4 +1,4 @@
-package synkr
+package lynkr
 
 import (
 	"encoding/json"
@@ -9,50 +9,27 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type SynkrRouter struct {
+type LynkrRouter struct {
 	r *mux.Router
 }
 
-type RequestLynk struct {
-	Id string
-	Url string
-}
-
-type createRequestBody struct {
-	Url string
-}
-
-func newRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
-	var body createRequestBody
-	err := json.NewDecoder(r.Body).Decode(&body)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return nil
-	}
-
-	id := GenerateId(10)
-
-	return &RequestLynk{ Id: id, Url: body.Url }
-}
-
-func newRouter() *SynkrRouter {
+func newRouter() *LynkrRouter {
 	r := mux.NewRouter()
-	return &SynkrRouter{r:r}
+	return &LynkrRouter{r:r}
 }
 
-func (s *SynkrClient) setRoutes() {
+func (s *LynkrClient) setRoutes() {
 	s.router.r.HandleFunc("/", s.rootRoute)
 	s.router.r.HandleFunc("/create", s.createRoute())
 	s.router.r.HandleFunc("/z/{id}", s.lynkrRoute())
 	s.router.r.Use(loggingMiddleware)
 }
 
-func (s *SynkrClient) rootRoute(w http.ResponseWriter, r *http.Request) {
+func (s *LynkrClient) rootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *SynkrClient) createRoute() http.HandlerFunc {
+func (s *LynkrClient) createRoute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
@@ -70,7 +47,7 @@ func (s *SynkrClient) createRoute() http.HandlerFunc {
 	}
 }
 
-func (s *SynkrClient) lynkrRoute() http.HandlerFunc {
+func (s *LynkrClient) lynkrRoute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]

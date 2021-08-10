@@ -1,4 +1,4 @@
-package synkr
+package lynkr
 
 import (
 	"fmt"

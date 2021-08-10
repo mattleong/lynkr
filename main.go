@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/mattleong/lynkr/synkr"
+	"github.com/mattleong/lynkr/lynkr"
 )
 
 func main() {
-	synkr.ServerStart()
+	lynkr.ServerStart()
 }
