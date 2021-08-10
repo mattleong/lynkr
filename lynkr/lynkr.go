@@ -2,17 +2,15 @@ package lynkr
 
 import (
 	"context"
-	"time"
+	"flag"
+	"fmt"
+	"net/http"
+	"strings"
 )
 
 type LynkrClient struct {
 	db *LynkrDB
 	router *LynkrRouter
-}
-
-func createContext() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	return ctx, cancel
 }
 
 func NewLynkrClient() *LynkrClient {
@@ -23,6 +21,22 @@ func NewLynkrClient() *LynkrClient {
 	return &client
 }
 
+func getPort() string {
+	var port strings.Builder
+	port.WriteString(*flag.String("port", "3000", "Localhost port (Default: 3000)"))
+	return ":" + port.String()
+}
+
+func (s *LynkrClient) ServerStart() {
+	fmt.Println("Lynkr server started...")
+
+	http.Handle("/", s.router.r)
+	httpErr := http.ListenAndServe(getPort(), nil)
+	if httpErr != nil {
+		return
+	}
+}
+
 func (s *LynkrClient) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
 	return s.db.saveLynk(ctx, requestLynk)
 }
@@ -30,3 +44,4 @@ func (s *LynkrClient) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*
 func (s *LynkrClient) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
 	return s.db.findLynkById(ctx, id)
 }
+

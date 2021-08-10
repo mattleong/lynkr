@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	lynkr.ServerStart()
+	client := lynkr.NewLynkrClient()
+	client.ServerStart()
 }

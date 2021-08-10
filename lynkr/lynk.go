@@ -28,7 +28,7 @@ func CreateLynk(id string, url string, goUrl string) *Lynk {
 	}
 }
 
-func newRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
+func NewRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
 	var body createRequestBody
 	err := json.NewDecoder(r.Body).Decode(&body)
 
@@ -37,7 +37,7 @@ func newRequestLynk(w http.ResponseWriter, r *http.Request) *RequestLynk {
 		return nil
 	}
 
-	id := GenerateId(10)
+	id := generateLynkId(10)
 
 	return &RequestLynk{ Id: id, Url: body.Url }
 }

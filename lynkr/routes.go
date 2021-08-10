@@ -35,7 +35,7 @@ func (s *LynkrClient) createRoute() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		ctx := r.Context()
-		l := newRequestLynk(w, r)
+		l := NewRequestLynk(w, r)
 		lynk, lynkErr := s.SaveLynk(ctx, l)
 		if lynkErr != nil {
 			log.Fatal(lynkErr)
