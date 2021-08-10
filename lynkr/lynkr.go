@@ -13,10 +13,13 @@ type LynkrClient struct {
 }
 
 func NewLynkrClient() *LynkrClient {
-	db := newDBClient()
-	r := newRouter()
-	client := LynkrClient{ db: db, router: r }
-	client.setRoutes()
+	dbUri := getDBURI()
+	db := newDBClient(dbUri)
+	router := newRouter()
+	client := LynkrClient{
+		db: db,
+		router: router,
+	}
 	return &client
 }
 
@@ -29,7 +32,7 @@ func getPort() string {
 func (s *LynkrClient) ServerStart() {
 	log.Println("Lynkr server started...")
 
-	http.Handle("/", s.router.r)
+	s.router.setRoutes(s.db)
 	httpErr := http.ListenAndServe(getPort(), nil)
 	if httpErr != nil {
 		return

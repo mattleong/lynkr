@@ -17,25 +17,26 @@ func newRouter() *LynkrRouter {
 	return &LynkrRouter{r:r}
 }
 
-func (s *LynkrClient) setRoutes() {
-	s.router.r.HandleFunc("/", s.rootRoute)
-	s.router.r.HandleFunc("/create", s.createRoute())
-	s.router.r.HandleFunc("/z/{id}", s.lynkrRoute())
-	s.router.r.Use(loggingMiddleware)
+func (router *LynkrRouter) setRoutes(db *LynkrDB) {
+	router.r.HandleFunc("/", router.rootRoute)
+	router.r.HandleFunc("/create", router.createRoute(db))
+	router.r.HandleFunc("/z/{id}", router.lynkrRoute(db))
+	router.r.Use(loggingMiddleware)
+	http.Handle("/", router.r)
 }
 
-func (s *LynkrClient) rootRoute(w http.ResponseWriter, r *http.Request) {
+func (s *LynkrRouter) rootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *LynkrClient) createRoute() http.HandlerFunc {
+func (s *LynkrRouter) createRoute(db *LynkrDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
 		ctx := r.Context()
 		l := NewRequestLynk(w, r)
-		lynk, err := s.db.SaveLynk(ctx, l)
+		lynk, err := db.SaveLynk(ctx, l)
 		if err != nil {
 			log.Println(err)
 		}
@@ -46,12 +47,12 @@ func (s *LynkrClient) createRoute() http.HandlerFunc {
 	}
 }
 
-func (s *LynkrClient) lynkrRoute() http.HandlerFunc {
+func (s *LynkrRouter) lynkrRoute(db *LynkrDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 		ctx := r.Context()
-		lynk, err := s.db.FindLynkById(ctx, id)
+		lynk, err := db.FindLynkById(ctx, id)
 		if err != nil {
 			log.Println(err)
 		}
