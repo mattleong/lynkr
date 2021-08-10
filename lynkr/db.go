@@ -3,7 +3,6 @@ package lynkr
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"time"
 
@@ -45,14 +44,14 @@ func (db *LynkrDB) Ping(ctx context.Context) {
 	if err := db.client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Database is alive!")
+	log.Println("Database is alive!")
 }
 
 func (db *LynkrDB) getLynkCollection() *mongo.Collection {
 	return db.client.Database("testing").Collection("lynks")
 }
 
-func (db *LynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
+func (db *LynkrDB) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
 	collection := db.getLynkCollection()
 	url := "/z/" + requestLynk.Id
 	lynk := CreateLynk(requestLynk.Id, url, requestLynk.Url)
@@ -66,14 +65,14 @@ func (db *LynkrDB) saveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lyn
 	return lynk, err
 }
 
-func (db *LynkrDB) findLynkById(ctx context.Context, id string) (*Lynk, error) {
+func (db *LynkrDB) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
 	var result Lynk
 	collection := db.getLynkCollection()
 	filter := bson.D{{"id", id}}
 
 	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
-		fmt.Println("record does not exist")
+		log.Println("record does not exist")
 	}
 
 	return &result, err

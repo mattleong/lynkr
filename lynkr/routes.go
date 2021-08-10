@@ -2,7 +2,6 @@ package lynkr
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -36,12 +35,12 @@ func (s *LynkrClient) createRoute() http.HandlerFunc {
 
 		ctx := r.Context()
 		l := NewRequestLynk(w, r)
-		lynk, lynkErr := s.SaveLynk(ctx, l)
-		if lynkErr != nil {
-			log.Fatal(lynkErr)
+		lynk, err := s.db.SaveLynk(ctx, l)
+		if err != nil {
+			log.Println(err)
 		}
 
-		fmt.Printf("created: %s -> %s\n", lynk.Id, lynk.GoUrl);
+		log.Printf("Created: %s -> %s\n", lynk.Id, lynk.GoUrl);
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
@@ -52,12 +51,12 @@ func (s *LynkrClient) lynkrRoute() http.HandlerFunc {
 		vars := mux.Vars(r)
 		id := vars["id"]
 		ctx := r.Context()
-		lynk, lynkErr := s.FindLynkById(ctx, id)
-		if lynkErr != nil {
-			log.Fatal(lynkErr)
+		lynk, err := s.db.FindLynkById(ctx, id)
+		if err != nil {
+			log.Println(err)
 		}
 
-		fmt.Printf("found: %s redirecting -> %s\n", lynk.Id, lynk.GoUrl);
+		log.Printf("Found: %s redirecting -> %s\n", lynk.Id, lynk.GoUrl);
 		http.Redirect(w, r, lynk.GoUrl, http.StatusSeeOther)
 	}
 }

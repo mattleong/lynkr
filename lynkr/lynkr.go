@@ -1,9 +1,8 @@
 package lynkr
 
 import (
-	"context"
 	"flag"
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -28,20 +27,12 @@ func getPort() string {
 }
 
 func (s *LynkrClient) ServerStart() {
-	fmt.Println("Lynkr server started...")
+	log.Println("Lynkr server started...")
 
 	http.Handle("/", s.router.r)
 	httpErr := http.ListenAndServe(getPort(), nil)
 	if httpErr != nil {
 		return
 	}
-}
-
-func (s *LynkrClient) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
-	return s.db.saveLynk(ctx, requestLynk)
-}
-
-func (s *LynkrClient) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
-	return s.db.findLynkById(ctx, id)
 }
 
