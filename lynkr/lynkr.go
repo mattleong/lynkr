@@ -5,14 +5,17 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"math/rand"
+	"time"
 )
 
 type LynkrClient struct {
-	db *LynkrDB
-	router *LynkrRouter
+	db *Database
+	router *Router
 }
 
 func NewLynkrClient() *LynkrClient {
+	rand.Seed(time.Now().UnixNano())
 	dbUri := getDBURI()
 	db := newDBClient(dbUri)
 	router := newRouter()

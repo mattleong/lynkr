@@ -12,8 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type LynkrDB struct {
+type Database struct {
 	client *mongo.Client
+	collection *mongo.Collection
 }
 
 func getDBURI() *string {
@@ -21,7 +22,7 @@ func getDBURI() *string {
 	return dbURI
 }
 
-func newDBClient(uri *string) *LynkrDB {
+func newDBClient(uri *string) *Database {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(*uri))
@@ -29,34 +30,32 @@ func newDBClient(uri *string) *LynkrDB {
 		log.Fatal(err)
 	}
 
-	return &LynkrDB{client: client}
+	return &Database{
+		client: client,
+		collection: client.Database("lynks-test").Collection("lynks"),
+	}
 }
 
-func (db *LynkrDB) Disconnect(ctx context.Context) {
+func (db *Database) Disconnect(ctx context.Context) {
 	err := db.client.Disconnect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (db *LynkrDB) Ping(ctx context.Context) {
+func (db *Database) Ping(ctx context.Context) {
 	if err := db.client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Database is alive!")
 }
 
-func (db *LynkrDB) getLynkCollection() *mongo.Collection {
-	return db.client.Database("testing").Collection("lynks")
-}
-
-func (db *LynkrDB) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
-	collection := db.getLynkCollection()
+func (db *Database) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
 	url := "/z/" + requestLynk.Id
 	lynk := CreateLynk(requestLynk.Id, url, requestLynk.Url)
 
-	_, err := collection.InsertOne(ctx, bson.D{
-		{ "id", lynk.Id },
+	_, err := db.collection.InsertOne(ctx, bson.D{
+		{ "lynkId", lynk.Id },
 		{ "url", lynk.Url },
 		{ "goUrl", lynk.GoUrl },
 	})
@@ -64,12 +63,11 @@ func (db *LynkrDB) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lyn
 	return lynk, err
 }
 
-func (db *LynkrDB) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
+func (db *Database) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
 	var result Lynk
-	collection := db.getLynkCollection()
-	filter := bson.D{{"id", id}}
+	filter := bson.D{{"lynkId", id}}
 
-	err := collection.FindOne(ctx, filter).Decode(&result)
+	err := db.collection.FindOne(ctx, filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		log.Println("record does not exist")
 	}
