@@ -1,4 +1,4 @@
-package lynkr
+package db
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"github.com/mattleong/lynkr/pkg/lynkr"
 )
 
 type Database struct {
@@ -17,12 +18,12 @@ type Database struct {
 	collection *mongo.Collection
 }
 
-func getDBURI() *string {
+func GetDBURI() *string {
 	dbURI := flag.String("dbHost", "mongodb://localhost:27017", "URI to db host")
 	return dbURI
 }
 
-func newDBClient(uri *string) *Database {
+func NewDBClient(uri *string) *Database {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(*uri))
@@ -50,9 +51,8 @@ func (db *Database) Ping(ctx context.Context) {
 	log.Println("Database is alive!")
 }
 
-func (db *Database) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Lynk, error) {
-	url := "/z/" + requestLynk.Id
-	lynk := CreateLynk(requestLynk.Id, url, requestLynk.Url)
+func (db *Database) SaveLynk(ctx context.Context, url string) (*lynkr.Lynk, error) {
+	lynk := lynkr.CreateLynk(url)
 
 	_, err := db.collection.InsertOne(ctx, bson.D{
 		{ "lynkId", lynk.Id },
@@ -63,8 +63,8 @@ func (db *Database) SaveLynk(ctx context.Context, requestLynk *RequestLynk) (*Ly
 	return lynk, err
 }
 
-func (db *Database) FindLynkById(ctx context.Context, id string) (*Lynk, error) {
-	var result Lynk
+func (db *Database) FindLynkById(ctx context.Context, id string) (*lynkr.Lynk, error) {
+	var result lynkr.Lynk
 	filter := bson.D{{"lynkId", id}}
 
 	err := db.collection.FindOne(ctx, filter).Decode(&result)

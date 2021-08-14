@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mattleong/lynkr/lynkr"
+	"github.com/mattleong/lynkr/pkg/client"
 )
 
 func main() {

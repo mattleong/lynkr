@@ -1,4 +1,4 @@
-package lynkr
+package routes
 
 import (
 	"encoding/json"
@@ -6,18 +6,23 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mattleong/lynkr/pkg/db"
 )
 
 type Router struct {
 	r *mux.Router
 }
 
-func newRouter() *Router {
+type createRequestBody struct {
+	Url string
+}
+
+func NewRouter() *Router {
 	r := mux.NewRouter()
 	return &Router{r:r}
 }
 
-func (router *Router) setRoutes(db *Database) {
+func (router *Router) SetRoutes(db *db.Database) {
 	router.r.HandleFunc("/", router.rootRoute)
 	router.r.HandleFunc("/create", router.createRoute(db))
 	router.r.HandleFunc("/z/{id}", router.lynkrRoute(db))
@@ -29,15 +34,23 @@ func (s *Router) rootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Router) createRoute(db *Database) http.HandlerFunc {
+func (s *Router) createRoute(db *db.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
 		ctx := r.Context()
-		l := NewRequestLynk(w, r)
-		lynk, err := db.SaveLynk(ctx, l)
+		var body createRequestBody
+		err := json.NewDecoder(r.Body).Decode(&body)
+
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		lynk, err := db.SaveLynk(ctx, body.Url)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Fatal(err)
 		}
 
@@ -47,13 +60,14 @@ func (s *Router) createRoute(db *Database) http.HandlerFunc {
 	}
 }
 
-func (s *Router) lynkrRoute(db *Database) http.HandlerFunc {
+func (s *Router) lynkrRoute(db *db.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 		ctx := r.Context()
 		lynk, err := db.FindLynkById(ctx, id)
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Fatal(err)
 		}
 

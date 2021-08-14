@@ -1,4 +1,4 @@
-package lynkr
+package routes
 
 import (
 	"log"
