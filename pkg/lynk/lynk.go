@@ -1,4 +1,4 @@
-package lynkr
+package lynk
 
 type Lynk struct {
 	Id string `json:"id"`

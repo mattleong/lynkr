@@ -1,4 +1,4 @@
-package lynkr
+package lynk
 
 import (
 	"math/rand"

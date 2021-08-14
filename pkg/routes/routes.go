@@ -22,7 +22,7 @@ func NewRouter() *Router {
 	return &Router{r:r}
 }
 
-func (router *Router) SetRoutes(db *db.Database) {
+func (router *Router) SetRoutes(db db.DatabaseStore) {
 	router.r.HandleFunc("/", router.rootRoute)
 	router.r.HandleFunc("/create", router.createRoute(db))
 	router.r.HandleFunc("/z/{id}", router.lynkrRoute(db))
@@ -34,7 +34,7 @@ func (s *Router) rootRoute(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Router) createRoute(db *db.Database) http.HandlerFunc {
+func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
@@ -60,7 +60,7 @@ func (s *Router) createRoute(db *db.Database) http.HandlerFunc {
 	}
 }
 
-func (s *Router) lynkrRoute(db *db.Database) http.HandlerFunc {
+func (s *Router) lynkrRoute(db db.DatabaseStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]

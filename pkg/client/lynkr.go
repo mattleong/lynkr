@@ -12,14 +12,13 @@ import (
 )
 
 type LynkrClient struct {
-	db *db.Database
+	db db.DatabaseStore
 	router *routes.Router
 }
 
 func NewLynkrClient() *LynkrClient {
 	rand.Seed(time.Now().UnixNano())
-	dbUri := db.GetDBURI()
-	db := db.NewDBClient(dbUri)
+	db := db.NewDBClient()
 	router := routes.NewRouter()
 	client := LynkrClient{
 		db: db,
