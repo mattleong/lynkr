@@ -3,17 +3,18 @@ package lynkr
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
-	"math/rand"
 	"time"
-	"github.com/mattleong/lynkr/pkg/routes"
+
 	"github.com/mattleong/lynkr/pkg/db"
+	"github.com/mattleong/lynkr/pkg/routes"
 )
 
 type LynkrClient struct {
 	db db.DatabaseStore
-	router *routes.Router
+	router routes.Router
 }
 
 func NewLynkrClient() *LynkrClient {

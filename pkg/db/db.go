@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/mattleong/lynkr/pkg/lynk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"github.com/mattleong/lynkr/pkg/lynk"
 )
 
 func GetDBURI() *string {
@@ -37,7 +37,7 @@ func NewDBClient() DatabaseStore {
 	return store
 }
 
-func (db Database) SaveLynk(ctx context.Context, url string) (*lynk.Lynk, error) {
+func (db *Database) SaveLynk(ctx context.Context, url string) (*lynk.Lynk, error) {
 	lynk := lynk.CreateLynk(url)
 
 	_, err := db.collection.InsertOne(ctx, bson.D{
@@ -49,7 +49,7 @@ func (db Database) SaveLynk(ctx context.Context, url string) (*lynk.Lynk, error)
 	return lynk, err
 }
 
-func (db Database) FindLynkById(ctx context.Context, id string) (*lynk.Lynk, error) {
+func (db *Database) FindLynkById(ctx context.Context, id string) (*lynk.Lynk, error) {
 	var result lynk.Lynk
 	filter := bson.D{{"lynkId", id}}
 
@@ -61,14 +61,14 @@ func (db Database) FindLynkById(ctx context.Context, id string) (*lynk.Lynk, err
 	return &result, err
 }
 
-func (db Database) Disconnect(ctx context.Context) {
+func (db *Database) Disconnect(ctx context.Context) {
 	err := db.client.Disconnect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (db Database) Ping(ctx context.Context) {
+func (db *Database) Ping(ctx context.Context) {
 	if err := db.client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}

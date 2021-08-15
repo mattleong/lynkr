@@ -2,8 +2,9 @@ package db
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
+
 	l "github.com/mattleong/lynkr/pkg/lynk"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type DatabaseStore interface {

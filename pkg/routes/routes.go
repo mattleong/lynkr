@@ -17,9 +17,9 @@ type createRequestBody struct {
 	Url string
 }
 
-func NewRouter() *Router {
+func NewRouter() Router {
 	r := mux.NewRouter()
-	return &Router{r:r}
+	return Router{r:r}
 }
 
 func (router *Router) SetRoutes(db db.DatabaseStore) {
