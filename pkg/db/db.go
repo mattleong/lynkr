@@ -30,10 +30,12 @@ func NewDBClient() *Database {
 	db := &Database{
 		client: client,
 		collection: client.Database("lynks-test").Collection("lynks"),
-		UplynkChan: make(chan *Uplynk),
-		DownlynkChan: make(chan *l.Lynk),
+		UplynkChan: make(chan Uplynk),
+		UplynkResultChan: make(chan UplynkResult),
 	}
 
+	// definitely don't need to use channels here
+	// but for science, we will
 	go db.startUplynk()
 
 	return db
@@ -52,24 +54,25 @@ func (db *Database) startUplynk() {
 			{ "goUrl", lynk.GoUrl },
 		})
 
-		// @todo send to error channel?
 		if (err != nil) {
 			log.Println("Bad lynk -> ", err.Error())
-			return
 		}
 
 		log.Println("Saved lynk -> ", lynk)
-		db.DownlynkChan <- lynk
+		db.UplynkResultChan <- UplynkResult{
+			Lynk: lynk,
+			Err: err,
+		}
 	}
 }
 
-func (db *Database) SaveLynk(ctx context.Context, lynk *l.Lynk) (*l.Lynk) {
-	db.UplynkChan <- &Uplynk{
+func (db *Database) SaveLynk(ctx context.Context, lynk *l.Lynk) (UplynkResult) {
+	db.UplynkChan <- Uplynk{
 		ctx: ctx,
 		lynk: lynk,
 	}
 
-	return <- db.DownlynkChan
+	return <- db.UplynkResultChan
 }
 
 func (db *Database) FindLynkById(ctx context.Context, id string) (*l.Lynk, error) {

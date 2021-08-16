@@ -8,7 +8,7 @@ import (
 )
 
 type DatabaseStore interface {
-	SaveLynk(context.Context, *l.Lynk) (*l.Lynk)
+	SaveLynk(context.Context, *l.Lynk) (UplynkResult)
 	FindLynkById(context.Context, string) (*l.Lynk, error)
 	Disconnect(context.Context)
 	Ping(context.Context)
@@ -19,10 +19,15 @@ type Uplynk struct {
 	lynk *l.Lynk
 }
 
+type UplynkResult struct {
+	Lynk *l.Lynk
+	Err error
+}
+
 type Database struct {
 	client *mongo.Client
 	collection *mongo.Collection
-	UplynkChan chan *Uplynk
-	DownlynkChan chan *l.Lynk
+	UplynkChan chan Uplynk
+	UplynkResultChan chan UplynkResult
 }
 

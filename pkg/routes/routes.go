@@ -50,7 +50,12 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 		}
 
 		lynk := l.CreateLynk(body.Url)
-		db.SaveLynk(ctx, lynk)
+		lynkResult := db.SaveLynk(ctx, lynk)
+
+		if (lynkResult.Err != nil) {
+			http.Error(w, lynkResult.Err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		log.Println("Create responded with -> ", lynk)
 
