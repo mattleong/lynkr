@@ -30,7 +30,7 @@ func NewDBClient() *Database {
 	db := &Database{
 		client: client,
 		collection: client.Database("lynks-test").Collection("lynks"),
-		UplynkChan: make(chan *l.Lynk),
+		UplynkChan: make(chan *Uplynk),
 		DownlynkChan: make(chan *l.Lynk),
 	}
 
@@ -40,9 +40,9 @@ func NewDBClient() *Database {
 }
 
 func (db *Database) startUplynk() {
-	for lynk := range db.UplynkChan {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+	for uplynk := range db.UplynkChan {
+		lynk := uplynk.lynk
+		ctx := uplynk.ctx
 
 		log.Println("Saving lynk -> ", lynk)
 
@@ -63,8 +63,12 @@ func (db *Database) startUplynk() {
 	}
 }
 
-func (db *Database) SaveLynk(lynk *l.Lynk) (*l.Lynk) {
-	db.UplynkChan <- lynk
+func (db *Database) SaveLynk(ctx context.Context, lynk *l.Lynk) (*l.Lynk) {
+	db.UplynkChan <- &Uplynk{
+		ctx: ctx,
+		lynk: lynk,
+	}
+
 	return <- db.DownlynkChan
 }
 

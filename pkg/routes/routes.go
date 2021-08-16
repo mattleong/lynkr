@@ -40,6 +40,7 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
+		ctx := r.Context()
 		var body createRequestBody
 		err := json.NewDecoder(r.Body).Decode(&body)
 
@@ -49,7 +50,7 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 		}
 
 		lynk := l.CreateLynk(body.Url)
-		db.SaveLynk(lynk)
+		db.SaveLynk(ctx, lynk)
 
 		log.Println("Create responded with -> ", lynk)
 
