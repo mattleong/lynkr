@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/mattleong/lynkr/pkg/lynk"
+	l "github.com/mattleong/lynkr/pkg/lynk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -30,35 +30,55 @@ func NewDBClient() DatabaseStore {
 	db := &Database{
 		client: client,
 		collection: client.Database("lynks-test").Collection("lynks"),
+		UplynkChan: make(chan *l.Lynk),
 	}
+
+	go db.startUplynk()
 
 	var store DatabaseStore = db
 
 	return store
 }
 
-func (db *Database) SaveLynk(ctx context.Context, url string) (*lynk.Lynk, error) {
-	lynk := lynk.CreateLynk(url)
+func (db *Database) startUplynk() {
+	for lynk := range db.UplynkChan {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 
-	_, err := db.collection.InsertOne(ctx, bson.D{
-		{ "lynkId", lynk.Id },
-		{ "url", lynk.Url },
-		{ "goUrl", lynk.GoUrl },
-	})
+		_, err := db.collection.InsertOne(ctx, bson.D{
+			{ "lynkId", lynk.Id },
+			{ "url", lynk.Url },
+			{ "goUrl", lynk.GoUrl },
+		})
 
-	return lynk, err
+		// @todo send to error channel?
+		if (err != nil) {
+			log.Println("Bad lynk -> ", err.Error())
+			return
+		}
+
+		log.Println("Saved lynk -> ", lynk)
+	}
 }
 
-func (db *Database) FindLynkById(ctx context.Context, id string) (*lynk.Lynk, error) {
-	var result lynk.Lynk
+func (db *Database) SaveLynk(url string) *l.Lynk {
+	lynk := l.CreateLynk(url)
+	log.Println("Saving lynk -> ", lynk)
+	db.UplynkChan <- lynk
+
+	return lynk
+}
+
+func (db *Database) FindLynkById(ctx context.Context, id string) (*l.Lynk, error) {
+	var lynk l.Lynk
 	filter := bson.D{{"lynkId", id}}
 
-	err := db.collection.FindOne(ctx, filter).Decode(&result)
+	err := db.collection.FindOne(ctx, filter).Decode(&lynk)
 	if err == mongo.ErrNoDocuments {
-		log.Println("record does not exist")
+		log.Println("Lynk does not exist")
 	}
 
-	return &result, err
+	return &lynk, err
 }
 
 func (db *Database) Disconnect(ctx context.Context) {

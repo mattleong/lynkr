@@ -8,7 +8,7 @@ import (
 )
 
 type DatabaseStore interface {
-	SaveLynk(context.Context, string) (*l.Lynk, error)
+	SaveLynk(string) (*l.Lynk)
 	FindLynkById(context.Context, string) (*l.Lynk, error)
 	Disconnect(context.Context)
 	Ping(context.Context)
@@ -17,5 +17,6 @@ type DatabaseStore interface {
 type Database struct {
 	client *mongo.Client
 	collection *mongo.Collection
+	UplynkChan chan *l.Lynk
 }
 

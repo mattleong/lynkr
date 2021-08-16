@@ -39,7 +39,6 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
-		ctx := r.Context()
 		var body createRequestBody
 		err := json.NewDecoder(r.Body).Decode(&body)
 
@@ -48,13 +47,9 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 			return
 		}
 
-		lynk, err := db.SaveLynk(ctx, body.Url)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			log.Fatal(err)
-		}
+		lynk := db.SaveLynk(body.Url)
+		log.Println("Create responded with -> ", lynk)
 
-		log.Printf("Created: %s -> %s\n", lynk.Id, lynk.GoUrl);
 		res, _ := json.Marshal(lynk)
 		w.Write(res)
 	}
