@@ -18,7 +18,7 @@ func GetDBURI() *string {
 	return dbURI
 }
 
-func NewDBClient() DatabaseStore {
+func NewDBClient() *Database {
 	uri := GetDBURI()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -31,19 +31,20 @@ func NewDBClient() DatabaseStore {
 		client: client,
 		collection: client.Database("lynks-test").Collection("lynks"),
 		UplynkChan: make(chan *l.Lynk),
+		DownlynkChan: make(chan *l.Lynk),
 	}
 
 	go db.startUplynk()
 
-	var store DatabaseStore = db
-
-	return store
+	return db
 }
 
 func (db *Database) startUplynk() {
 	for lynk := range db.UplynkChan {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
+		log.Println("Saving lynk -> ", lynk)
 
 		_, err := db.collection.InsertOne(ctx, bson.D{
 			{ "lynkId", lynk.Id },
@@ -58,15 +59,13 @@ func (db *Database) startUplynk() {
 		}
 
 		log.Println("Saved lynk -> ", lynk)
+		db.DownlynkChan <- lynk
 	}
 }
 
-func (db *Database) SaveLynk(url string) *l.Lynk {
-	lynk := l.CreateLynk(url)
-	log.Println("Saving lynk -> ", lynk)
+func (db *Database) SaveLynk(lynk *l.Lynk) (*l.Lynk) {
 	db.UplynkChan <- lynk
-
-	return lynk
+	return <- db.DownlynkChan
 }
 
 func (db *Database) FindLynkById(ctx context.Context, id string) (*l.Lynk, error) {

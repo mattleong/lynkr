@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mattleong/lynkr/pkg/db"
+	l "github.com/mattleong/lynkr/pkg/lynk"
 )
 
 type Router struct {
@@ -47,7 +48,9 @@ func (s *Router) createRoute(db db.DatabaseStore) http.HandlerFunc {
 			return
 		}
 
-		lynk := db.SaveLynk(body.Url)
+		lynk := l.CreateLynk(body.Url)
+		db.SaveLynk(lynk)
+
 		log.Println("Create responded with -> ", lynk)
 
 		res, _ := json.Marshal(lynk)
